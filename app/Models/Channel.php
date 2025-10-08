@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Broadcast;
 
 class Channel extends Model
 {
@@ -84,6 +85,9 @@ class Channel extends Model
             'sent_at' => now(),
         ]);
 
-        MessageSent::dispatch($message);
+        Broadcast::private('channels.' . $this->id)
+            ->as('App\\Events\\MessageSent')
+            ->with(['message'=> $message->load('user')])
+            ->send();
     }
 }
